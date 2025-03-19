@@ -38,6 +38,7 @@ const Computers = ({ isMobile }) => {
 
 const ComputersCanvas = () => {
   const [isMobile, setIsMobile] = useState(false);
+  const canvasRef = useRef();
 
   useEffect(() => {
     // Add a listener for changes to the screen size
@@ -54,6 +55,13 @@ const ComputersCanvas = () => {
     // Add the callback function as a listener for changes to the media query
     mediaQuery.addEventListener("change", handleMediaQueryChange);
 
+    // Add CSS class for mobile devices to fix scrolling issues
+    if (mediaQuery.matches && canvasRef.current) {
+      const canvasElement = canvasRef.current;
+      canvasElement.style.touchAction = "auto";
+      canvasElement.style.pointerEvents = "none";
+    }
+
     // Remove the listener when the component is unmounted
     return () => {
       mediaQuery.removeEventListener("change", handleMediaQueryChange);
@@ -62,11 +70,13 @@ const ComputersCanvas = () => {
 
   return (
     <Canvas
+      ref={canvasRef}
       frameloop='demand'
       shadows
       dpr={[1, 2]}
       camera={{ position: [20, -2, 5], fov: 25 }}
       gl={{ preserveDrawingBuffer: true }}
+      className="canvas"
     >
       <Suspense fallback={<CanvasLoader />}>
         <OrbitControls
@@ -79,6 +89,8 @@ const ComputersCanvas = () => {
           dampingFactor={0.05}
           target={[0, 0, 0]}
           makeDefault
+          enabled={!isMobile} // Disable controls completely on mobile
+          enablePan={false}   // Disable panning on all devices
         />
         <Computers isMobile={isMobile} />
       </Suspense>
